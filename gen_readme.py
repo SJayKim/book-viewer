@@ -59,8 +59,9 @@ if books:
         spine = SPINES[i % len(SPINES)]
         t = html.escape(b["title"])
         initial = html.escape(b["title"].strip()[:1]) or "•"
+        viewer_href = f"viewer.html?f={b['href']}&t={urllib.parse.quote(b['title'])}"
         cards.append(
-            f'''      <a class="card" href="{b['href']}" target="_blank" rel="noopener">
+            f'''      <a class="card" href="{viewer_href}">
         <span class="spine" style="background:{spine}"><span class="initial">{initial}</span></span>
         <span class="body">
           <span class="idx">{i + 1:02d}</span>

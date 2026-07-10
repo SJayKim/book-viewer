@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>읽기</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{ --reader:#2b2825; --muted:#b9b2a6; --accent:#c0472b; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"Pretendard",system-ui,sans-serif;background:var(--reader);color:#f3efe7}
+  .bar{
+    position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:.7rem;
+    padding:.55rem .85rem;background:rgba(33,30,25,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(255,255,255,.08)
+  }
+  .bar a.back{color:#f3efe7;text-decoration:none;font-size:.88rem;white-space:nowrap;
+    border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:.35rem .7rem}
+  .bar a.back:hover{background:rgba(255,255,255,.08)}
+  .bar .title{font-weight:600;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .bar .tools{display:flex;align-items:center;gap:.35rem}
+  .bar button,.bar a.dl{background:rgba(255,255,255,.08);color:#f3efe7;border:none;border-radius:8px;
+    width:34px;height:34px;font-size:1.05rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    text-decoration:none;line-height:1}
+  .bar button:hover,.bar a.dl:hover{background:rgba(255,255,255,.16)}
+  .bar .pg{font-size:.8rem;color:var(--muted);min-width:3.4rem;text-align:center;font-variant-numeric:tabular-nums}
+  #viewer{padding:1.5rem 1rem 4rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
+  #viewer canvas{max-width:100%;height:auto;background:#fff;border-radius:2px;
+    box-shadow:0 12px 34px -10px rgba(0,0,0,.6)}
+  .loading{color:var(--muted);padding:3.5rem 1rem;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <a class="back" href="index.html">← 책장</a>
+    <span class="title" id="title"></span>
+    <span class="tools">
+      <button id="zoomout" title="축소">−</button>
+      <span class="pg"><span id="pg">–</span>/<span id="pgtotal">–</span></span>
+      <button id="zoomin" title="확대">＋</button>
+      <a class="dl" id="dl" title="원본 열기" target="_blank" rel="noopener">⤓</a>
+    </span>
+  </div>
+  <div id="viewer"><div class="loading">불러오는 중…</div></div>
+
+  <script type="module">
+    import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs';
+
+    const params = new URLSearchParams(location.search);
+    const file = params.get('f');
+    const title = params.get('t') || '';
+    const viewer = document.getElementById('viewer');
+    document.getElementById('title').textContent = title;
+    document.title = title ? title + ' — 책장' : '읽기';
+    if (file) document.getElementById('dl').href = file;
+
+    let pdfDoc = null;
+    let scale = 1;
+    let io = null;
+
+    async function render() {
+      viewer.innerHTML = '';
+      const dpr = window.devicePixelRatio || 1;
+      const targetW = Math.min(900, viewer.clientWidth);
+      for (let n = 1; n <= pdfDoc.numPages; n++) {
+        const page = await pdfDoc.getPage(n);
+        const unscaled = page.getViewport({ scale: 1 });
+        const fit = (targetW / unscaled.width) * scale;
+        const viewport = page.getViewport({ scale: fit });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = Math.floor(viewport.width * dpr);
+        canvas.height = Math.floor(viewport.height * dpr);
+        canvas.style.width = viewport.width + 'px';
+        canvas.style.height = viewport.height + 'px';
+        canvas.dataset.pg = n;
+        viewer.appendChild(canvas);
+        await page.render({ canvasContext: ctx, viewport, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null }).promise;
+      }
+      observe();
+    }
+
+    function observe() {
+      if (io) io.disconnect();
+      io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) document.getElementById('pg').textContent = e.target.dataset.pg; });
+      }, { threshold: 0.5 });
+      viewer.querySelectorAll('canvas').forEach(c => io.observe(c));
+    }
+
+    document.getElementById('zoomin').onclick = () => { scale = Math.min(3, scale + 0.2); render(); };
+    document.getElementById('zoomout').onclick = () => { scale = Math.max(0.6, scale - 0.2); render(); };
+    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 200); });
+
+    if (!file) {
+      viewer.innerHTML = '<div class="loading">열 파일이 지정되지 않았습니다.</div>';
+    } else {
+      (async () => {
+        try {
+          pdfDoc = await pdfjsLib.getDocument(file).promise;
+          document.getElementById('pgtotal').textContent = pdfDoc.numPages;
+          await render();
+        } catch (e) {
+          viewer.innerHTML = '<div class="loading">PDF를 불러오지 못했습니다.<br>' + e + '</div>';
+        }
+      })();
+    }
+  </script>
+</body>
+</html>
