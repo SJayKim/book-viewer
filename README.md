@@ -1,7 +1,8 @@
-# 📚 책 뷰어
+# 📚 책장
 
-Google Drive에 올린 PDF가 자동으로 여기에 동기화됩니다.
-아래 제목을 클릭하면 로그인 없이 브라우저에서 바로 열립니다.
+**웹 목차 → https://sjaykim.github.io/book-viewer/**
+
+Google Drive에 올린 PDF가 자동으로 여기에 동기화됩니다. 아래 제목을 클릭하면 로그인 없이 브라우저에서 바로 열립니다.
 
 - [AI 엔지니어 영어 면접 말하기](https://github.com/SJayKim/book-viewer/blob/main/books/AI%20%EC%97%94%EC%A7%80%EB%8B%88%EC%96%B4%20%EC%98%81%EC%96%B4%20%EB%A9%B4%EC%A0%91%20%EB%A7%90%ED%95%98%EA%B8%B0.pdf)
 - [Agentic AI Trends](https://github.com/SJayKim/book-viewer/blob/main/books/Agentic%20AI%20Trends.pdf)
