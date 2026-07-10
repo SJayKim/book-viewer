@@ -1,0 +1,57 @@
+name: sync-books
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-books
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install rclone
+        run: curl https://rclone.org/install.sh | sudo bash
+
+      - name: Write service account key
+        run: printf '%s' "$GDRIVE_SA_JSON" > sa.json
+        env:
+          GDRIVE_SA_JSON: ${{ secrets.GDRIVE_SA_JSON }}
+
+      - name: Configure rclone remote
+        run: |
+          rclone config create gdrive drive \
+            scope=drive.readonly \
+            service_account_file="$PWD/sa.json" \
+            root_folder_id="$GDRIVE_FOLDER_ID"
+        env:
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+
+      - name: Sync PDFs from Drive
+        run: |
+          mkdir -p books
+          rclone sync "gdrive:" books/ --include "*.pdf" --verbose
+
+      - name: Generate README
+        run: python3 gen_readme.py
+
+      - name: Commit and push if changed
+        run: |
+          rm -f sa.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "sync books from Google Drive"
+            git push
+          fi
