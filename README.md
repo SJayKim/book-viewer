@@ -4,7 +4,6 @@
 
 Google Drive에 올린 PDF가 자동으로 여기에 동기화됩니다. 아래 제목을 클릭하면 로그인 없이 브라우저에서 바로 열립니다.
 
-- [AI 엔지니어 영어 면접 말하기](https://github.com/SJayKim/book-viewer/blob/main/books/AI%20%EC%97%94%EC%A7%80%EB%8B%88%EC%96%B4%20%EC%98%81%EC%96%B4%20%EB%A9%B4%EC%A0%91%20%EB%A7%90%ED%95%98%EA%B8%B0.pdf)
 - [Agentic AI Trends](https://github.com/SJayKim/book-viewer/blob/main/books/Agentic%20AI%20Trends.pdf)
 - [Agentic AI 보안 설계](https://github.com/SJayKim/book-viewer/blob/main/books/Agentic%20AI%20%EB%B3%B4%EC%95%88%20%EC%84%A4%EA%B3%84.pdf)
 - [Agentic AI 엔지니어 핵심 역량](https://github.com/SJayKim/book-viewer/blob/main/books/Agentic%20AI%20%EC%97%94%EC%A7%80%EB%8B%88%EC%96%B4%20%ED%95%B5%EC%8B%AC%20%EC%97%AD%EB%9F%89.pdf)
